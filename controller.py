@@ -4,6 +4,7 @@ import pulsectl
 
 import pulse
 
+
 class Controller:
     MUSIC_SINK = "music_in"
     COMM_SINK = "communication_in"
@@ -97,9 +98,9 @@ class Controller:
                     or self.SYSTEM_SINK in inputSink.name):
                 self._move(inputSink.index, sink)
 
-    def unloadModules(self):
+    @staticmethod
+    def unloadModules():
         os.system("pacmd unload-module module-null-sink")
-        # os.system("pacmd unload-module module-combine-sink")
         os.system("pacmd unload-module module-loopback")
 
     def setVolume(self, sink_name: str, volume: int):

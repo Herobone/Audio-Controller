@@ -1,15 +1,12 @@
+import sys
 import threading
 import traceback
 
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QRunnable, pyqtSlot, QObject, pyqtSignal, QThreadPool
-from typing import Tuple
-
 from PyQt5.QtWidgets import QMainWindow
 
 import mainWindow
-import sys
-
 from controller import Controller
 from midi import MIDIController
 
@@ -69,6 +66,7 @@ class MidiWorker(QRunnable):
         self.kwargs['aux_knob_change_callback'] = self.signals.volumeChange
         self.kwargs['button_press_callback'] = self.signals.volumeChange
 
+    # noinspection PyUnresolvedReferences
     @pyqtSlot()
     def run(self):
         """
@@ -76,6 +74,7 @@ class MidiWorker(QRunnable):
         """
 
         # Retrieve args/kwargs here; and fire processing using them
+        # noinspection PyBroadException
         try:
             result = self.fn(*self.args, **self.kwargs)
         except:
@@ -116,18 +115,25 @@ class GUI(QMainWindow):
         else:
             event.ignore()
 
-    def start(self):
+    def start(self) -> None:
+        """
+        Starts the UI and initializes it. Also starts Workers
+        """
         self.ui.setupUi(self)
         self._setupActions()
         self.show()
 
-        self.midiWorker.signals.volumeChange.connect(self.setVolume)
+        # noinspection PyUnresolvedReferences
+        self.midiWorker.signals.volumeChange.connect(self.setVolume)        # listen for volume Changes
 
         # Execute
-        self.threadpool.start(self.midiWorker)
+        self.threadpool.start(self.midiWorker)                              # Start worker thread
 
-    def stop(self):
-        self.running.set()
+    def stop(self) -> None:
+        """
+        Call this method after the UI has exited. Cleans up and kills all running Threads
+        """
+        self.running.set()      # set stopped flag
         pass
 
     def setVolume(self, sink_name: str, volume: int):
